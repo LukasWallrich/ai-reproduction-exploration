@@ -83,8 +83,32 @@ classify_deviation <- function(paper_value, reproduced_value, paper_decimals = N
   tibble(
     abs_deviation = abs_dev,
     rel_deviation_pct = rel_dev,
-    category = category
+    category = category,
+    paper_decimals = paper_decimals
   )
+}
+
+# Format deviation log for display: Paper/Reproduced/abs_deviation rounded to
+# the paper's reported precision, rel_deviation_pct to 1 decimal place.
+# Uses max(natural decimal places of Paper value, paper_decimals) so that
+# e.g. 0.055 with paper_decimals=2 still displays 3 dp, while 0.00 uses paper_decimals=2.
+format_deviation_log <- function(deviations) {
+  deviations %>%
+    rowwise() %>%
+    mutate(
+      .natural_dp = {
+        s <- sub("0+$", "", format(Paper, scientific = FALSE, nsmall = 10))
+        if (grepl("\\.", s)) nchar(sub(".*\\.", "", s)) else 0L
+      },
+      .dp = max(.natural_dp, paper_decimals),
+      Paper = formatC(Paper, format = "f", digits = .dp),
+      Reproduced = formatC(Reproduced, format = "f", digits = .dp),
+      abs_deviation = formatC(abs_deviation, format = "f", digits = .dp),
+      rel_deviation_pct = if_else(is.na(rel_deviation_pct), "\u2014",
+                                   formatC(rel_deviation_pct, format = "f", digits = 1))
+    ) %>%
+    ungroup() %>%
+    select(-.natural_dp, -.dp)
 }
 
 # Helper to style deviation categories with background colors
@@ -248,24 +272,24 @@ style_deviation <- function(category) {
 # #     )
 # #   )
 #
-# # Display with color-coded categories
-# deviations %>%
+# # Format for display (Paper/Reproduced at paper precision, percentages to 1dp)
+# deviations_fmt <- format_deviation_log(deviations)
+# deviations_fmt %>%
 #   select(Claim, `Table/Figure`, Parameter, Paper, Reproduced,
 #          abs_deviation, rel_deviation_pct, category) %>%
 #   kable(
 #     caption = "Complete Deviation Log",
 #     col.names = c("Claim", "Table/Figure", "Parameter", "Paper", "Reproduced",
-#                   "Abs. Dev.", "Rel. Dev. (%)", "Category"),
-#     digits = 4
+#                   "Abs. Dev.", "Rel. Dev. (%)", "Category")
 #   ) %>%
 #   kable_styling(bootstrap_options = c("striped", "hover")) %>%
 #   column_spec(
 #     8,
 #     background = case_when(
-#       deviations$category == "Exact" ~ "#d4edda",
-#       deviations$category == "Minor deviation" ~ "#fff3cd",
-#       deviations$category == "Substantive deviation" ~ "#f8d7da",
-#       deviations$category == "Conclusion change" ~ "#f5c6cb",
+#       deviations_fmt$category == "Exact" ~ "#d4edda",
+#       deviations_fmt$category == "Minor deviation" ~ "#fff3cd",
+#       deviations_fmt$category == "Substantive deviation" ~ "#f8d7da",
+#       deviations_fmt$category == "Conclusion change" ~ "#f5c6cb",
 #       TRUE ~ "#ffffff"
 #     )
 #   )

@@ -15,7 +15,7 @@
 - **Preregistration**: https://osf.io/kje48
 - **OSF repository**: https://osf.io/b3tj4/ — contains replication code (Stata .do files), R plotting script, and processed data (ZA6800, a different study number)
 - **Supplementary appendix**: Available via Springer (electronic supplementary material)
-- **Note**: Replication materials will NOT be consulted until Stage 6 (if needed)
+- **Note**: Replication materials were not consulted until Stage 6, when substantive deviations in R² prompted comparison of analytical decisions
 
 ## Claims from the Abstract
 
@@ -27,8 +27,8 @@
 **Key results to reproduce**:
 - Low-income individuals: higher lack of economic recognition (0.61 vs 0.47)
 - Low-skilled workers: higher lack of work recognition (0.59 vs 0.51)
-- Rural residents: higher lack of services recognition (0.52 vs 0.49; but small difference)
-- Sociocultural conservatives: higher lack of opinion recognition (0.61 vs 0.45)
+- Rural residents: higher lack of services recognition (0.35 vs 0.31; small difference)
+- Sociocultural conservatives: higher lack of opinion recognition (0.56 vs 0.24)
 - All differences statistically significant at p < 0.05
 
 **Parameter registry**: Mean values for each group comparison in Fig. 3 (16 comparisons across 4 groups × 4 facets), significance of each t-test
@@ -40,10 +40,10 @@
 **Statistical method**: OLS regression (Models 1-4), weighted
 **Key results to reproduce**:
 - **Model 1** (4 facets separately): All four LoR facets significant (p < 0.05), R² = 0.26
-  - LoR Economic: coefficient ~0.09 (from Fig 4)
-  - LoR Work: coefficient ~0.03
-  - LoR Services: coefficient ~0.03
-  - LoR Opinion: coefficient ~0.17
+  - LoR Economic: coefficient ~0.15 (from Fig 4)
+  - LoR Work: coefficient ~0.055
+  - LoR Services: coefficient ~0.05
+  - LoR Opinion: coefficient ~0.21
 - **Model 2** (composite index): LoR composite significant, R² = 0.26
   - LoR Composite: coefficient ~0.42
 - **Model 3** (social groups only): R² = 0.18
