@@ -1,0 +1,302 @@
+---
+title: "Reproduction Report: [CITATION]"
+subtitle: "[PAPER TITLE]"
+author: "AI Reproduction"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: true
+    code-summary: "Show code"
+    embed-resources: true
+keep-md: true
+execute:
+  warning: false
+  message: false
+  cache: true  # Switch to false for final render
+---
+
+::: {.callout-warning appearance="simple"}
+## Exploratory AI Capability Study
+
+This report was generated autonomously by an AI agent as part of an exploratory study into the capabilities of agentic AI for computational reproduction. **It is not an independent assessment of the original paper.** The AI agent may have made errors in data processing, analytical decisions, or interpretation. Any discrepancies reported here may reflect limitations of the AI reproduction process rather than issues with the original research.
+:::
+
+```{r setup}
+#| label: setup
+#| include: false
+
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+# Add domain-specific packages as needed (e.g., lme4, lavaan, survey)
+
+set.seed(12345)  # Set appropriate seed
+
+# Helper function for deviation classification
+# paper_decimals: number of decimal places the paper reports for this value.
+#   If NULL, inferred from the paper_value. Pass explicitly for high-precision
+#   values (≥3 decimal places) to ensure correct "Exact" classification.
+# significant: whether the paper reports this parameter as statistically significant.
+#   When TRUE, always use relative thresholds even for near-zero values — the small
+#   absolute value reflects the parameter's units, not proximity to the null.
+#   When FALSE or NULL, the near-zero absolute rule applies for |paper_value| < 0.2.
+classify_deviation <- function(paper_value, reproduced_value, paper_decimals = NULL,
+                               significant = NULL) {
+  abs_dev <- abs(reproduced_value - paper_value)
+
+  # Determine reporting precision
+  if (is.null(paper_decimals)) {
+    # Infer from paper_value: count decimal places
+    pv_str <- sub("0+$", "", format(paper_value, scientific = FALSE, nsmall = 10))
+    if (grepl("\\.", pv_str)) {
+      paper_decimals <- nchar(sub(".*\\.", "", pv_str))
+    } else {
+      paper_decimals <- 0
+    }
+  }
+
+  # Rounding check: does reproduced value round to the paper value at reported precision?
+  rounds_same <- round(reproduced_value, paper_decimals) == round(paper_value, paper_decimals)
+
+  # Near-zero rule only applies when the parameter is NOT significant (or unknown).
+  # When a parameter is significant, its small absolute value reflects units, not
+  # proximity to the null — so relative thresholds should be used.
+  use_near_zero_rule <- abs(paper_value) < 0.2 && !isTRUE(significant)
+
+  if (use_near_zero_rule) {
+    rel_dev <- NA_real_
+    category <- case_when(
+      rounds_same ~ "Exact",
+      abs_dev <= 0.01 ~ "Minor deviation",
+      TRUE ~ "Substantive deviation"
+    )
+  } else {
+    rel_dev <- abs_dev / abs(paper_value) * 100
+    category <- case_when(
+      rounds_same ~ "Exact",
+      rel_dev <= 5 ~ "Minor deviation",
+      TRUE ~ "Substantive deviation"
+    )
+  }
+  tibble(
+    abs_deviation = abs_dev,
+    rel_deviation_pct = rel_dev,
+    category = category
+  )
+}
+
+# Helper to style deviation categories with background colors
+style_deviation <- function(category) {
+  colors <- c(
+    "Exact" = "#d4edda",
+    "Minor deviation" = "#fff3cd",
+    "Substantive deviation" = "#f8d7da",
+    "Conclusion change" = "#f5c6cb"
+  )
+  bg <- colors[category]
+  if (is.na(bg)) bg <- "#ffffff"
+  paste0("background-color: ", bg, ";")
+}
+```
+
+::: {.callout-note appearance="minimal"}
+## Abstract
+
+**Paper**: [Full citation]
+
+**Data**: [Dataset name, source, N]
+
+**Verdict**: [COMPUTATIONALLY REPRODUCED / QUALITATIVELY REPRODUCED / QUALITATIVELY REPRODUCED (substantial numeric deviations) / PARTIALLY REPRODUCED / NOT REPRODUCED]
+
+[2-4 sentence summary of reproduction findings. State which claims were confirmed, any notable deviations, and the likely explanation for discrepancies if any.]
+:::
+
+## Open Materials
+
+| Material | Available | Location |
+|----------|-----------|----------|
+| Supplementary materials | [Yes/No] | [URL or —] |
+| Replication code | [Yes/No] | [URL or —] |
+| Replication data (processed) | [Yes/No] | [URL or —] |
+| Raw data | [Yes/No] | [URL or —] |
+
+[If materials exist: Note whether and when they were consulted during reproduction.]
+
+---
+
+## Paper Overview
+
+### Research Question
+[What the paper investigates]
+
+### Key Methods
+[Statistical approach, data, sample]
+
+### Claims from the Abstract
+
+1. [Claim 1]
+2. [Claim 2]
+3. [Claim N]
+
+---
+
+## Data and Variable Construction
+
+```{r load-data}
+#| label: load-data
+
+# Load data
+# data <- read.csv("data/filename.csv")  # Adjust as needed
+
+# Basic data description
+# tibble(
+#   Metric = c("Observations", "Variables"),
+#   Value = c(nrow(data), ncol(data))
+# ) %>%
+#   kable(caption = "Dataset Overview") %>%
+#   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+[Description of dataset, variable construction, recoding, sample restrictions]
+
+---
+
+## Analytical Decisions and Assumptions
+
+[List all decisions made during reproduction where the paper was ambiguous, silent, or where the chosen approach could reasonably have been done differently. For each, state what was assumed and why.]
+
+| Decision | Paper says | Our interpretation | Rationale | Alternative possible |
+|----------|-----------|-------------------|-----------|---------------------|
+| [e.g., Weight variable] | "Weighted per BES specs" | Used `wt_demog` | Most common general weight | Could use `wt_vote` |
+
+[Also flag any analytical choices in the original paper that appear questionable or non-standard, with brief explanation of why.]
+
+---
+
+## Reproduction Results
+
+### [Analysis 1: e.g., Main Model]
+
+**Target values**:
+- [Coefficient 1]: [value] (SE = [value])
+- [Coefficient 2]: [value] (SE = [value])
+
+```{r analysis-1}
+#| label: analysis-1
+
+# [Analysis code here]
+
+# Create comparison table
+# comparison <- tibble(
+#   Parameter = c("..."),
+#   `Paper Value` = c("..."),
+#   `Reproduced` = c("..."),
+#   `Deviation` = c("...")
+# )
+#
+# kable(comparison, caption = "...") %>%
+#   kable_styling(bootstrap_options = c("striped", "hover"))
+```
+
+### [Analysis 2: e.g., Sub-group Analysis]
+
+```{r analysis-2}
+#| label: analysis-2
+
+# [Analysis code here]
+```
+
+---
+
+## Deviation Log
+
+```{r deviation-summary}
+#| label: deviation-summary
+
+# Comprehensive deviation assessment across all reproduced statistics
+# Structured by claim — group deviations under the claim they support
+#
+# deviations <- tibble(
+#   Claim = c(1, 1, 2, 2),
+#   `Table/Figure` = c("Table 1", "Table 1", "Table 2", "Table 2"),
+#   Parameter = c("..."),
+#   Paper = c(...),
+#   Reproduced = c(...)
+# ) %>%
+#   mutate(
+#     assessment = map2(Paper, Reproduced, classify_deviation)
+#   ) %>%
+#   unnest(assessment)
+#
+# # Check for conclusion changes (significance/direction) and override category
+# # For additive-scale statistics (coefficients, betas): direction reversal = sign change
+# # For ratio-scale statistics (ORs, HRs, IRRs): direction reversal = crossing 1.0
+# #   (i.e., one value >1 and the other <1, since 1.0 is the null value)
+# # The sign() check only works for additive-scale; add explicit ratio-scale check:
+# # deviations <- deviations %>%
+# #   mutate(
+# #     direction_differs = case_when(
+# #       is_ratio_scale ~ (Paper > 1 & Reproduced < 1) | (Paper < 1 & Reproduced > 1),
+# #       TRUE ~ sign(Paper) != sign(Reproduced) & abs(Paper) > 0.01
+# #     ),
+# #     category = if_else(
+# #       significance_differs | direction_differs,
+# #       "Conclusion change",
+# #       category
+# #     )
+# #   )
+#
+# # Display with color-coded categories
+# deviations %>%
+#   select(Claim, `Table/Figure`, Parameter, Paper, Reproduced,
+#          abs_deviation, rel_deviation_pct, category) %>%
+#   kable(
+#     caption = "Complete Deviation Log",
+#     col.names = c("Claim", "Table/Figure", "Parameter", "Paper", "Reproduced",
+#                   "Abs. Dev.", "Rel. Dev. (%)", "Category"),
+#     digits = 4
+#   ) %>%
+#   kable_styling(bootstrap_options = c("striped", "hover")) %>%
+#   column_spec(
+#     8,
+#     background = case_when(
+#       deviations$category == "Exact" ~ "#d4edda",
+#       deviations$category == "Minor deviation" ~ "#fff3cd",
+#       deviations$category == "Substantive deviation" ~ "#f8d7da",
+#       deviations$category == "Conclusion change" ~ "#f5c6cb",
+#       TRUE ~ "#ffffff"
+#     )
+#   )
+```
+
+---
+
+## Discrepancy Investigation
+
+[Only include this section if deviations exceed rounding error. Document comparison with authors' code if available, alternative specifications tried, and possible explanations for discrepancies.]
+
+---
+
+## Conclusion
+
+**Reproduction status: [COMPUTATIONALLY REPRODUCED / QUALITATIVELY REPRODUCED / QUALITATIVELY REPRODUCED (substantial numeric deviations) / PARTIALLY REPRODUCED / NOT REPRODUCED]**
+
+[Summary paragraph: Overall assessment of the reproduction, key patterns in deviations, and likely explanations for any discrepancies.]
+
+### Claim-by-Claim Assessment
+
+1. **Claim 1**: [Reproduced / Not reproduced]. [Brief explanation with key statistic comparison.]
+2. **Claim 2**: [Reproduced / Not reproduced]. [Brief explanation with key statistic comparison.]
+3. **Claim N**: [Reproduced / Not reproduced]. [Brief explanation with key statistic comparison.]
+
+---
+
+## Session Info
+
+```{r session-info}
+#| label: session-info
+
+sessionInfo()
+```

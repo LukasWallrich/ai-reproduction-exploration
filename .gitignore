@@ -1,0 +1,26 @@
+# Data files (large, often restricted-access)
+data/
+*/data/
+
+# R artifacts
+.Rhistory
+.Rproj.user
+.RData
+.Ruserdata
+*.sav
+*.por
+
+# Quarto intermediate files
+*_files/
+*_cache/
+*.knit.md
+
+# Paper PDFs (copyrighted)
+*.pdf
+
+# OS
+.DS_Store
+
+# Generated site
+_site/
+index.html
